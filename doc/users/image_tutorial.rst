@@ -46,8 +46,8 @@ examples, if you use the %pylab method, you can skip the "mpimg." and
 Importing image data into Numpy arrays
 ===============================================
 
-Plotting image data is supported by the `Pillow
-<http://python-imaging.github.io/>`_).  Natively, matplotlib only
+Loading image data is supported by the `Pillow
+<http://python-imaging.github.io/>`_ library.  Natively, matplotlib only
 supports PNG images.  The commands shown below fall back on Pillow if the
 native read fails.
 
