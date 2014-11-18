@@ -41,6 +41,14 @@ Examples below will use the latter method, for clarity.  In these
 examples, if you use the %pylab method, you can skip the "mpimg." and
 "plt." prefixes.
 
+For those of you following along with the IPython Notebook, you'll want to
+pay attention to whether you're using inline plotting or plotting in another
+window.  This is also called the "backend."  For inline plotting, commands in
+cells below the cell that outputs a plot will not affect the plot.  For example,
+changing the color map is not possible from cells below the cell that creates a plot.
+However, for other backends, such as qt4, cells below those that create the plot
+will change the plot - it is a live object in memory.
+
 .. _importing_data:
 
 Importing image data into Numpy arrays
@@ -170,9 +178,7 @@ This is array slicing.  You can read more in the `Numpy tutorial
 
 Now, with a luminosity (2D, no color) image, the default colormap (aka lookup table,
 LUT), is applied.  The default is called jet.  There are plenty of
-others to choose from.  Let's set some others using the
-:meth:`~matplotlib.image.Image.set_cmap` method on our image plot
-object:
+others to choose from.
 
 .. sourcecode:: ipython
 
@@ -188,9 +194,13 @@ object:
         imgplot = plt.imshow(lum_img)
         imgplot.set_cmap('hot')
 
+Note that you can also change colormaps on existing plot objects using the
+:meth:`~matplotlib.image.Image.set_cmap` method:
+		
 .. sourcecode:: ipython
 
-    In [9]: plt.imshow(lum_img, cmap="spectral")
+    In [9]: imgplot = plt.imshow(lum_img)
+	In [10]: imgplot.set_cmap('spectral')
 
 .. plot::
 
@@ -202,6 +212,11 @@ object:
         imgplot = plt.imshow(lum_img)
         imgplot.set_cmap('spectral')
 
+However, remember that in the IPython notebook with the inline backend, 
+you can't make changes to plots that have already been rendered.  If you
+create imgplot here in one cell, you cannot call set_cmap() on it in a later
+cell and expect the earlier plot to change.
+		
 There are many other colormap schemes available.  See the `list and
 images of the colormaps
 <../examples/color/colormaps_reference.html>`_.
@@ -216,8 +231,8 @@ do that by adding color bars.  It's as easy as one line:
 
 .. sourcecode:: ipython
 
-    In [10]: imgplot = plt.imshow(lum_img)
-    In [11]: plt.colorbar()
+    In [11]: imgplot = plt.imshow(lum_img)
+    In [12]: plt.colorbar()
 
 .. plot::
 
@@ -248,7 +263,7 @@ image data, we use the :func:`~matplotlib.pyplot.hist` function.
 
 .. sourcecode:: ipython
 
-    In [12]: plt.hist(lum_img.ravel(), bins=256, range=(0.0, 1.0))
+    In [13]: plt.hist(lum_img.ravel(), bins=256, range=(0.0, 1.0), fc='k', ec='k')
 
 .. plot::
 
@@ -257,7 +272,7 @@ image data, we use the :func:`~matplotlib.pyplot.hist` function.
     import numpy as np
     img = mpimg.imread('../_static/stinkbug.png')
     lum_img = img[:,:,0]
-    plt.hist(lum_img.flatten(), 256, range=(0.0, 1.0))
+    plt.hist(lum_img.flatten(), 256, range=(0.0, 1.0), fc='k', ec='k')
 
 Most often, the "interesting" part of the image is around the peak,
 and you can get extra contrast by clipping the regions above and/or
@@ -273,7 +288,7 @@ plots from earlier cells.
 
 .. sourcecode:: ipython
 
-    In [13]: imgplot = plt.imshow(lum_img, clim=(0.0, 0.7))
+    In [14]: imgplot = plt.imshow(lum_img, clim=(0.0, 0.7))
 
 .. plot::
 
@@ -311,27 +326,23 @@ only keeping a select few.  Now when we plot it, that data gets blown
 up to the size on your screen.  The old pixels aren't there anymore,
 and the computer has to draw in pixels to fill that space.
 
-We'll use scipy's ndimage module to resize the image.  This module
-also provides a wealth of functionality regarding filtering images and
-manipulating them in all sorts of ways.  Check out 
-`the docs<http://docs.scipy.org/doc/scipy/reference/ndimage.html>`_
-
-
+We'll use the Pillow library that we used to load the image also to resize 
+the image.
 
 .. sourcecode:: ipython
 
-    In [14]: import scipy.ndimage
-    In [15]: resized = scipy.ndimage.zoom(lum_img, 0.1, order=0)
-    In [16]: imgplot = plt.imshow(resized)
+    In [15]: import Image
+    In [16]: img = Image.open('../_static/stinkbug.png')
+	In [17]: resized = img.thumbnail((64, 64), Image.ANTIALIAS) # resizes image in-place
+    In [18]: imgplot = plt.imshow(img)
 
 .. plot::
 
     import matplotlib.pyplot as plt
-    import matplotlib.image as mpimg
-    import scipy.ndimage
-    img = mpimg.imread('../_static/stinkbug.png')  # opens the file using Pillow - it's not an array yet
-    resized = scipy.ndimage.zoom(img[:,:,0], 0.1, order=0)    
-    imgplot = plt.imshow(resized)
+    import Image
+    img = Image.open('../_static/stinkbug.png')  # opens the file using Pillow - it's not an array yet
+    img.thumbnail((64, 64), Image.ANTIALIAS)  # resizes image in-place
+    imgplot = plt.imshow(img)
 
 Here we have the default interpolation, bilinear, since we did not
 give :func:`~matplotlib.pyplot.imshow` any interpolation argument.
@@ -340,29 +351,27 @@ Let's try some others:
 
 .. sourcecode:: ipython
 
-    In [17]: imgplot = plt.imshow(resized, interpolation="nearest")
+    In [19]: imgplot = plt.imshow(resized, interpolation="nearest")
 
 .. plot::
 
    import matplotlib.pyplot as plt
-   import matplotlib.image as mpimg
-   import scipy.ndimage
-   img = mpimg.imread('../_static/stinkbug.png')  # opens the file using Pillow - it's not an array yet
-   resized = scipy.ndimage.zoom(img[:,:,0], 0.1, order=0)     
-   imgplot = plt.imshow(resized, interpolation="nearest")
+   import Image
+   img = Image.open('../_static/stinkbug.png')  # opens the file using Pillow - it's not an array yet
+   img.thumbnail((64, 64), Image.ANTIALIAS)  # resizes image in-place
+   imgplot = plt.imshow(img, interpolation="nearest")
 
 .. sourcecode:: ipython
 
-    In [18]: imgplot = plt.imshow(resized, interpolation="bicubic")
+    In [19]: imgplot = plt.imshow(resized, interpolation="bicubic")
 
 .. plot::
 
    import matplotlib.pyplot as plt
-   import matplotlib.image as mpimg
-   import scipy.ndimage
-   img = mpimg.imread('../_static/stinkbug.png')  # opens the file using Pillow - it's not an array yet
-   resized = scipy.ndimage.zoom(img[:,:,0], 0.1, order=0)     
-   imgplot = plt.imshow(resized, interpolation="bicubic")
+   import Image
+   img = Image.open('../_static/stinkbug.png')  # opens the file using Pillow - it's not an array yet
+   img.thumbnail((64, 64), Image.ANTIALIAS)  # resizes image in-place
+   imgplot = plt.imshow(img, interpolation="bicubic")
 
 Bicubic interpolation is often used when blowing up photos - people
 tend to prefer blurry over pixelated.
