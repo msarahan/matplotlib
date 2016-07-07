@@ -19,33 +19,13 @@ environment:
     # for testing purpose: numpy 1.8 on py2.7, for the rest use 1.10/latest
     # theoretically the CONDA_INSTALL_LOCN could be only two: one for 32bit, one for 64bit
     # but using one for the right python version is hopefully making it fast due to package caching.
-    - TARGET_ARCH: "x86"
-      CONDA_PY: "27"
-      CONDA_NPY: "18"
-      PYTHON_VERSION: "2.7"
-      # this variable only influence pdf/svg tests, png tests are run on any platform
-      # only once, because it basically triples the testing times
-      # pick the one which seems to make the most problems
-      TEST_ALL_IMAGES: "yes"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda"
     - TARGET_ARCH: "x64"
       CONDA_PY: "27"
       CONDA_NPY: "18"
       PYTHON_VERSION: "2.7"
       TEST_ALL_IMAGES: "no"
       CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
-    - TARGET_ARCH: "x64"
-      CONDA_PY: "34"
-      CONDA_NPY: "110"
-      PYTHON_VERSION: "3.4"
-      TEST_ALL_IMAGES: "no"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda3-x64"
-    - TARGET_ARCH: "x64"
-      CONDA_PY: "35"
-      CONDA_NPY: "110"
-      PYTHON_VERSION: "3.5"
-      TEST_ALL_IMAGES: "no"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
+
 
 # We always use a 64-bit machine, but can build x86 distributions
 # with the PYTHON_ARCH variable (which is used by CMD_IN_ENV).
@@ -169,12 +149,5 @@ artifacts:
   - path: dist\*
     name: packages
 
-  - path: result_images\*
-    name: result_images
-    type: zip
-
-on_failure:
-  - python visual_tests.py
-  - echo zipping images after a failure...
-  - 7z a result_images.zip result_images\ |grep -v "Compressing"
-  - appveyor PushArtifact result_images.zip
+  - path: bld.bat
+    name: buildbat
